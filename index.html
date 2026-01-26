@@ -262,7 +262,7 @@
         <div style="flex:1;min-width:280px">
           <h2 id="contact-heading">Get a free review & Google presence check</h2>
           <p class="muted" style="margin-top:6px">No hard sell. We send a short report and suggested next steps.</p>
-
+    
           <div style="margin-top:18px;display:grid;gap:12px;max-width:520px">
             <div class="card" style="padding:14px">
               <div style="font-weight:700">Starter</div>
@@ -274,88 +274,97 @@
             </div>
           </div>
         </div>
-
-        <form id="leadForm" novalidate aria-label="Contact form" style="flex:0 1 520px">
+    
+        <form id="leadForm"
+              action="https://formspree.io/f/xeeganjy"
+              method="POST"
+              novalidate
+              aria-label="Contact form"
+              style="flex:0 1 520px">
+    
           <label for="name">Your name</label>
           <input id="name" name="name" type="text" placeholder="Jane Doe" required />
-
+    
           <label for="business">Business name</label>
           <input id="business" name="business" type="text" placeholder="Acme Plumbing" required />
-
+    
           <label for="email">Email</label>
           <input id="email" name="email" type="email" placeholder="you@business.com" required />
-
+    
           <label for="phone">Phone / WhatsApp</label>
           <input id="phone" name="phone" type="tel" placeholder="+1 (555) 222-3333" />
-
+    
           <label for="link">Website or Google listing</label>
-          <input id="link" name="link" type="url" placeholder="https://..." />
-
+          <input id="link" name="website" type="url" placeholder="https://..." />
+    
+          <!-- Formspree extras -->
+          <input type="hidden" name="_subject" value="New Lead – ClearPresence Digital" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="text" name="_gotcha" style="display:none" />
+    
           <div class="form-actions" style="display:flex;align-items:center;gap:10px">
             <button class="btn btn-primary" type="submit">Request review</button>
             <button type="button" class="btn btn-ghost" id="demoBtn">Book short demo</button>
           </div>
-
+    
           <div class="note" id="formMsg" role="status" aria-live="polite" style="margin-top:10px"></div>
         </form>
       </div>
     </section>
-
-  </main>
-
-  <footer>
-    ClearPresence Digital · New Jersey, USA &nbsp; • &nbsp;
-    <a href="#" style="color:var(--muted)">Privacy</a> &nbsp; • &nbsp;
-    <a href="#" style="color:var(--muted)">Terms</a>
-  </footer>
-
-  <script>
-    // Lightweight form handler: validates, shows a local "thank you", and logs data.
+    
+    </main>
+    
+    <footer>
+      ClearPresence Digital · New Jersey, USA &nbsp; • &nbsp;
+      <a href="#" style="color:var(--muted)">Privacy</a> &nbsp; • &nbsp;
+      <a href="#" style="color:var(--muted)">Terms</a>
+    </footer>
+    
+    <script>
     (function(){
       const form = document.getElementById('leadForm');
       const msg = document.getElementById('formMsg');
       const demoBtn = document.getElementById('demoBtn');
-
-      function showMessage(text,ok=true){
+    
+      function showMessage(text, ok = true){
         msg.textContent = text;
         msg.style.color = ok ? 'green' : 'crimson';
       }
-
-      form.addEventListener('submit', function(e){
+    
+      form.addEventListener('submit', async function(e){
         e.preventDefault();
-        const data = {
-          name: form.name.value.trim(),
-          business: form.business.value.trim(),
-          email: form.email.value.trim(),
-          phone: form.phone.value.trim(),
-          link: form.link.value.trim(),
-          ts: new Date().toISOString()
-        };
-        if(!data.name || !data.business || !data.email){
+    
+        if(!form.name.value.trim() ||
+           !form.business.value.trim() ||
+           !form.email.value.trim()){
           showMessage('Please fill name, business and email.', false);
           return;
         }
-        // Simulate submission: store in localStorage (so user can see demo), and show success
+    
         try {
-          const leads = JSON.parse(localStorage.getItem('cpd_leads') || '[]');
-          leads.unshift(data);
-          localStorage.setItem('cpd_leads', JSON.stringify(leads.slice(0,200)));
-        } catch(e){/* ignore storage errors */}
-
-        showMessage('Thanks — we will send your free check within 48 hours.');
-        form.reset();
-        // brief confetti-like subtle effect
-        setTimeout(()=>{ msg.textContent=''; }, 8000);
-        console.log('lead (local):', data);
+          const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' }
+          });
+    
+          if(response.ok){
+            showMessage('Thanks — we’ll send your free check within 48 hours.');
+            form.reset();
+            setTimeout(()=>{ msg.textContent=''; }, 8000);
+          } else {
+            throw new Error();
+          }
+        } catch {
+          showMessage('Submission failed. Please try again or email us directly.', false);
+        }
       });
-
+    
       demoBtn.addEventListener('click', function(){
-        showMessage('To book a demo, reply to the confirmation email we’ll send after you request a check.');
-        // small UI hint: scroll to form
+        showMessage('To book a demo, submit the form and reply to the confirmation email.');
         form.querySelector('input').focus();
       });
-
-      // accessibility: smooth scroll for anchored links
+    
       document.querySelectorAll('a[href^="#"]').forEach(a=>{
         a.addEventListener('click', function(e){
           const id = a.getAttribute('href');
@@ -367,7 +376,7 @@
         });
       });
     })();
-  </script>
-
-</body>
-</html>
+    </script>
+    
+    </body>
+    </html>
