@@ -1,272 +1,373 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ClearPresence Digital</title>
-  <meta name="description" content="Review and Google Business Profile management for local businesses. Simple, monthly, done-for-you." />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ClearPresence Digital — Reviews & Google Business Profile Management</title>
+  <meta name="description" content="Reviews and Google Business Profile setup + management for local businesses. Done-for-you, monthly plans." />
+  <meta name="theme-color" content="#0b66ff" />
 
   <style>
-    :root {
-      --primary: #111;
-      --bg-light: #f7f7f7;
-      --border-light: #e6e6e6;
-      --text-muted: #666;
-      --max-width: 1100px;
+    /* Reset & base */
+    :root{
+      --bg: #ffffff;
+      --muted: #6b7280;
+      --text: #0f1724;
+      --accent: #0b66ff; /* tasteful blue accent */
+      --accent-dark: #094fc4;
+      --surface: #f7f8fb;
+      --card: #fbfcfe;
+      --border: #e6e9f0;
+      --maxw: 1120px;
+      --radius: 8px;
+      --shadow: 0 6px 20px rgba(11,102,255,0.06);
+      --glass: rgba(255,255,255,0.6);
+      font-synthesis: none;
     }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      color: var(--primary);
-      background: #fff;
-      line-height: 1.55;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.55;
+      -webkit-tap-highlight-color:transparent;
     }
-
-    a { color: inherit; text-decoration: none; }
-
-    /* Header */
-    header {
-      position: sticky;
-      top: 0;
-      background: #fff;
-      border-bottom: 1px solid var(--border-light);
-      z-index: 10;
-    }
-
-    .nav {
-      max-width: var(--max-width);
-      margin: auto;
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-weight: 600;
-      font-size: 18px;
-    }
-
-    .btn {
-      border: 1px solid var(--primary);
-      padding: 10px 18px;
-      font-size: 14px;
-      background: var(--primary);
-      color: #fff;
-      cursor: pointer;
-      display: inline-block;
-    }
-
-    .btn.outline {
-      background: transparent;
-      color: var(--primary);
-    }
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;height:auto;display:block}
 
     /* Layout */
-    .container {
-      max-width: var(--max-width);
-      margin: auto;
-      padding: 80px 20px;
-    }
-
-    section { margin-bottom: 80px; }
-
-    h1 {
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
-
-    h2 {
-      font-size: 28px;
-      margin-bottom: 20px;
-    }
-
-    p {
-      max-width: 760px;
-      color: var(--text-muted);
-    }
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:36px 20px}
+    header{position:sticky;top:0;background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.86));backdrop-filter:blur(4px);border-bottom:1px solid var(--border);z-index:40}
+    .nav{max-width:var(--maxw);margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:700;font-size:18px;letter-spacing:0.1px}
+    .nav-actions{display:flex;gap:10px;align-items:center}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;font-weight:600;border:1px solid transparent;cursor:pointer}
+    .btn-primary{background:var(--accent);color:white;box-shadow:var(--shadow);border-color:var(--accent-dark)}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+    .small{font-size:13px;padding:8px 12px;border-radius:7px}
 
     /* Hero */
-    .hero {
-      padding-top: 100px;
-      padding-bottom: 100px;
-    }
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:36px;align-items:center;padding:48px 20px}
+    .hero-inner{max-width:720px}
+    h1{font-size:32px;margin:0 0 10px;line-height:1.06}
+    .lede{color:var(--muted);font-size:17px;margin:0 0 20px}
+    .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .visual-card{background:linear-gradient(180deg,#fff, #fbfdff);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
 
-    .hero p {
-      font-size: 18px;
-      margin-bottom: 28px;
-    }
+    /* visual: simple dashboard / icons */
+    .visual-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .stars{display:flex;gap:6px}
+    .star{width:22px;height:22px;background:linear-gradient(90deg,#ffb02e,#ff8f2b);border-radius:4px;display:inline-block}
+    .pin{width:42px;height:42px;border-radius:8px;background:linear-gradient(180deg,#eaf4ff,#d6ecff);display:flex;align-items:center;justify-content:center;color:var(--accent-dark);font-weight:700}
 
-    /* Grids */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 40px;
-    }
+    .dashboard-mock{background:linear-gradient(180deg,#fff,#fbfdff);border-radius:8px;padding:12px;border:1px solid var(--border)}
+    .metric{display:flex;align-items:center;justify-content:space-between;padding:8px 6px}
 
-    .card {
-      background: var(--bg-light);
-      padding: 28px;
-      border-radius: 4px;
-      border: 1px solid var(--border-light);
-    }
+    /* Sections */
+    section{padding:58px 0;border-bottom:1px solid var(--border)}
+    .intro{padding-top:24px;padding-bottom:4px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
+    .card{background:var(--card);border:1px solid var(--border);padding:20px;border-radius:10px}
+    .card-strong{font-weight:700;margin-bottom:10px}
+    .muted{color:var(--muted)}
 
-    ul {
-      padding-left: 18px;
-      margin-top: 12px;
-    }
+    /* Who & Fit */
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--surface);font-size:13px;color:var(--text);border:1px solid var(--border)}
 
-    li { margin-bottom: 8px; }
+    /* How it works */
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .step{background:linear-gradient(180deg,#fff,#fbfdff);padding:18px;border-radius:10px;border:1px solid var(--border);text-align:center}
+    .step h3{margin:8px 0 6px;font-size:16px}
+    .step p{margin:0;color:var(--muted);font-size:14px}
 
-    /* Steps */
-    ol {
-      max-width: 700px;
-      padding-left: 18px;
-    }
-
-    /* Form */
-    form {
-      max-width: 520px;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 12px;
-      font-size: 14px;
-      margin-bottom: 14px;
-    }
-
-    input {
-      border: 1px solid var(--border-light);
-    }
-
-    button {
-      border: none;
-      background: var(--primary);
-      color: #fff;
-      cursor: pointer;
-    }
+    /* Contact form */
+    .form-wrap{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+    form{background:linear-gradient(180deg,#fff,#fcfdff);padding:20px;border-radius:10px;border:1px solid var(--border);width:100%;max-width:520px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input,textarea,select{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);font-size:14px}
+    textarea{min-height:110px;resize:vertical}
+    .form-actions{display:flex;gap:12px;align-items:center;margin-top:8px}
+    .note{font-size:13px;color:var(--muted)}
 
     /* Footer */
-    footer {
-      border-top: 1px solid var(--border-light);
-      padding: 40px 20px;
-      font-size: 13px;
-      color: var(--text-muted);
-      text-align: center;
+    footer{padding:28px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* Small screens */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr;gap:20px;padding:36px 18px}
+      .visual-card{order:2}
+      .grid-2{grid-template-columns:1fr}
+      .steps{grid-template-columns:1fr}
+      .wrap{padding:20px}
+      .nav{padding:12px 16px}
     }
 
-    /* Responsive */
-    @media (max-width: 800px) {
-      h1 { font-size: 32px; }
-      h2 { font-size: 24px; }
-      .grid-2 { grid-template-columns: 1fr; }
-      .container { padding: 60px 20px; }
+    /* Tiny */
+    @media (max-width:420px){
+      h1{font-size:26px}
     }
+
+    /* Subtle interactions */
+    .btn-primary:focus, .btn:focus {outline:3px solid rgba(11,102,255,0.12);outline-offset:2px}
+    .card, .step, .visual-card{transition:transform .18s ease, box-shadow .18s ease}
+    .card:hover, .step:hover, .visual-card:hover{transform:translateY(-4px);box-shadow:0 14px 40px rgba(11,102,255,0.06)}
   </style>
 </head>
-
 <body>
 
-<header>
-  <div class="nav">
-    <div class="logo">ClearPresence Digital</div>
-    <a href="#contact" class="btn">Get Started</a>
-  </div>
-</header>
-
-<main>
-
-  <!-- Hero -->
-  <section class="hero container">
-    <h1>Get more customer reviews and stronger Google visibility — without hiring staff.</h1>
-    <p>
-      We set up and manage reviews and Google Business Profiles for local businesses.
-      Monthly. Done-for-you. No long-term contracts.
-    </p>
-    <a href="#contact" class="btn outline">See if we’re a fit</a>
-  </section>
-
-  <!-- Services -->
-  <section class="container">
-    <h2>What We Do</h2>
-    <div class="grid-2">
-      <div class="card">
-        <strong>Reviews & Reputation</strong>
-        <ul>
-          <li>Automated review requests</li>
-          <li>Review monitoring</li>
-          <li>Response assistance</li>
-          <li>Monthly reports</li>
-        </ul>
+  <header aria-hidden="false">
+    <nav class="nav" role="navigation" aria-label="Top">
+      <div class="brand">ClearPresence Digital</div>
+      <div class="nav-actions">
+        <a class="btn small btn-ghost" href="#services">Services</a>
+        <a class="btn small" href="#contact">Get Started</a>
       </div>
-      <div class="card">
-        <strong>Google Business Profile</strong>
-        <ul>
-          <li>Setup or cleanup</li>
-          <li>Posts and Q&A</li>
-          <li>Service and category optimization</li>
-          <li>Visibility checks</li>
-        </ul>
+    </nav>
+  </header>
+
+  <main class="wrap" id="top">
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-inner">
+        <h1 id="hero-heading">More reviews. Better Google presence. Less work.</h1>
+        <p class="lede">We set up and manage review requests and Google Business Profiles for local businesses. Done-for-you monthly plans — no long contracts.</p>
+
+        <div class="hero-cta" role="group" aria-label="Primary actions">
+          <a class="btn btn-primary" href="#contact">Get a free check</a>
+          <a class="btn btn-ghost" href="#services">See services</a>
+        </div>
+
+        <div style="margin-top:24px;color:var(--muted);font-size:13px">
+          <span class="pill">Trusted for local businesses</span>
+          <span style="margin-left:10px;color:var(--muted)">• No setup surprises • Month-to-month</span>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Fit -->
-  <section class="container">
-    <h2>Who This Is For</h2>
-    <div class="grid-2">
-      <div class="card">
-        <strong>Good fit if you are:</strong>
-        <ul>
-          <li>A local service business</li>
-          <li>Short on time</li>
-          <li>Wanting consistent review growth</li>
-        </ul>
+      <aside class="visual-card" aria-hidden="true">
+        <div class="visual-top">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="pin">G</div>
+            <div style="font-weight:700">Google presence</div>
+          </div>
+          <div class="stars" title="reviews">
+            <span class="star" aria-hidden="true"></span>
+            <span class="star" aria-hidden="true"></span>
+            <span class="star" aria-hidden="true"></span>
+            <span class="star" aria-hidden="true"></span>
+            <span class="star" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="dashboard-mock" role="img" aria-label="dashboard snapshot">
+          <div class="metric" style="font-weight:600">Recent reviews <span style="color:var(--accent-dark)">+18</span></div>
+          <div style="height:8px;background:linear-gradient(90deg,var(--accent) 60%, #e9eefc 0);border-radius:6px;margin:8px 0"></div>
+          <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+            <div style="color:var(--muted);font-size:13px">Avg rating</div>
+            <div style="font-weight:700">4.6</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;font-size:13px;color:var(--muted)">Automated requests • Monitoring • Monthly reports</div>
+      </aside>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="intro" aria-labelledby="services-heading">
+      <div class="wrap" style="max-width:var(--maxw);padding:0">
+        <h2 id="services-heading">What we do</h2>
+        <div class="grid-2" style="margin-top:18px">
+          <div class="card" role="region" aria-label="Reviews and reputation">
+            <div class="card-strong">Reviews & reputation</div>
+            <div class="muted">Automated review capture, monitoring and response playbooks. White-label reports.</div>
+            <ul style="margin-top:12px;color:var(--text)">
+              <li>SMS & email review requests</li>
+              <li>Centralized inbox for feedback</li>
+              <li>Response templates and escalation</li>
+            </ul>
+          </div>
+
+          <div class="card" role="region" aria-label="Google Business Profile">
+            <div class="card-strong">Google Business Profile</div>
+            <div class="muted">Setup, optimization, posts, and ongoing maintenance to keep listings visible and accurate.</div>
+            <ul style="margin-top:12px;color:var(--text)">
+              <li>Profile setup & cleanup</li>
+              <li>Photos, services and categories</li>
+              <li>Monthly visibility checks</li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <strong>Not a fit if you want:</strong>
-        <ul>
-          <li>Guaranteed rankings</li>
-          <li>Instant results</li>
-          <li>Review removal promises</li>
-        </ul>
+    </section>
+
+    <!-- WHO -->
+    <section aria-labelledby="fit-heading">
+      <div class="wrap" style="padding-top:0">
+        <h2 id="fit-heading">Who this is for</h2>
+        <div class="grid-2" style="margin-top:18px">
+          <div class="card">
+            <div class="card-strong">Good fit</div>
+            <div class="muted">Local service businesses that need steady review growth and accurate listings.</div>
+            <ul style="margin-top:12px">
+              <li>Clinics, salons, shops</li>
+              <li>Home services and contractors</li>
+              <li>Professional offices and franchises</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-strong">Not a fit</div>
+            <div class="muted">If you need instant rankings, paid-ad management, or guaranteed review removal.</div>
+            <ul style="margin-top:12px">
+              <li>Ad-only campaigns</li>
+              <li>Legal removal of truthful reviews</li>
+              <li>Large enterprise SEO programs</li>
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Process -->
-  <section class="container">
-    <h2>How It Works</h2>
-    <ol>
-      <li>We review your current reviews and Google listing.</li>
-      <li>We set up and optimize your presence.</li>
-      <li>We manage everything monthly and report results.</li>
-    </ol>
-  </section>
+    <!-- HOW IT WORKS -->
+    <section aria-labelledby="how-heading">
+      <div class="wrap" style="padding-top:0">
+        <h2 id="how-heading">How it works</h2>
+        <div class="steps" style="margin-top:18px">
+          <div class="step" aria-hidden="false">
+            <div style="font-size:20px;font-weight:700">1</div>
+            <h3>Quick assessment</h3>
+            <p>We analyze your current reviews and listing in under 48 hours.</p>
+          </div>
+          <div class="step">
+            <div style="font-size:20px;font-weight:700">2</div>
+            <h3>Setup</h3>
+            <p>We configure review capture and optimize your Google Business Profile.</p>
+          </div>
+          <div class="step">
+            <div style="font-size:20px;font-weight:700">3</div>
+            <h3>Ongoing management</h3>
+            <p>Monthly monitoring, reports, and simple recommendations you can act on.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Contact -->
-  <section class="container" id="contact">
-    <h2>Get a Free Review & Google Presence Check</h2>
-    <form>
-      <input type="text" placeholder="Your name" required />
-      <input type="text" placeholder="Business name" required />
-      <input type="email" placeholder="Email" required />
-      <input type="text" placeholder="Phone / WhatsApp" />
-      <input type="text" placeholder="Website or Google listing link" />
-      <button type="submit">Request Review</button>
-    </form>
-  </section>
+    <!-- CONTACT / LEAD FORM -->
+    <section id="contact" aria-labelledby="contact-heading">
+      <div class="wrap" style="padding-top:0;display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px">
+          <h2 id="contact-heading">Get a free review & Google presence check</h2>
+          <p class="muted" style="margin-top:6px">No hard sell. We send a short report and suggested next steps.</p>
 
-</main>
+          <div style="margin-top:18px;display:grid;gap:12px;max-width:520px">
+            <div class="card" style="padding:14px">
+              <div style="font-weight:700">Starter</div>
+              <div class="muted" style="font-size:13px;margin-top:6px">Reviews management — month-to-month</div>
+            </div>
+            <div class="card" style="padding:14px">
+              <div style="font-weight:700">Growth</div>
+              <div class="muted" style="font-size:13px;margin-top:6px">Reviews + GBP management</div>
+            </div>
+          </div>
+        </div>
 
-<footer>
-  ClearPresence Digital · New Jersey, USA<br />
-  <a href="#">Privacy Policy</a> · <a href="#">Terms</a>
-</footer>
+        <form id="leadForm" novalidate aria-label="Contact form" style="flex:0 1 520px">
+          <label for="name">Your name</label>
+          <input id="name" name="name" type="text" placeholder="Jane Doe" required />
+
+          <label for="business">Business name</label>
+          <input id="business" name="business" type="text" placeholder="Acme Plumbing" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@business.com" required />
+
+          <label for="phone">Phone / WhatsApp</label>
+          <input id="phone" name="phone" type="tel" placeholder="+1 (555) 222-3333" />
+
+          <label for="link">Website or Google listing</label>
+          <input id="link" name="link" type="url" placeholder="https://..." />
+
+          <div class="form-actions" style="display:flex;align-items:center;gap:10px">
+            <button class="btn btn-primary" type="submit">Request review</button>
+            <button type="button" class="btn btn-ghost" id="demoBtn">Book short demo</button>
+          </div>
+
+          <div class="note" id="formMsg" role="status" aria-live="polite" style="margin-top:10px"></div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    ClearPresence Digital · New Jersey, USA &nbsp; • &nbsp;
+    <a href="#" style="color:var(--muted)">Privacy</a> &nbsp; • &nbsp;
+    <a href="#" style="color:var(--muted)">Terms</a>
+  </footer>
+
+  <script>
+    // Lightweight form handler: validates, shows a local "thank you", and logs data.
+    (function(){
+      const form = document.getElementById('leadForm');
+      const msg = document.getElementById('formMsg');
+      const demoBtn = document.getElementById('demoBtn');
+
+      function showMessage(text,ok=true){
+        msg.textContent = text;
+        msg.style.color = ok ? 'green' : 'crimson';
+      }
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const data = {
+          name: form.name.value.trim(),
+          business: form.business.value.trim(),
+          email: form.email.value.trim(),
+          phone: form.phone.value.trim(),
+          link: form.link.value.trim(),
+          ts: new Date().toISOString()
+        };
+        if(!data.name || !data.business || !data.email){
+          showMessage('Please fill name, business and email.', false);
+          return;
+        }
+        // Simulate submission: store in localStorage (so user can see demo), and show success
+        try {
+          const leads = JSON.parse(localStorage.getItem('cpd_leads') || '[]');
+          leads.unshift(data);
+          localStorage.setItem('cpd_leads', JSON.stringify(leads.slice(0,200)));
+        } catch(e){/* ignore storage errors */}
+
+        showMessage('Thanks — we will send your free check within 48 hours.');
+        form.reset();
+        // brief confetti-like subtle effect
+        setTimeout(()=>{ msg.textContent=''; }, 8000);
+        console.log('lead (local):', data);
+      });
+
+      demoBtn.addEventListener('click', function(){
+        showMessage('To book a demo, reply to the confirmation email we’ll send after you request a check.');
+        // small UI hint: scroll to form
+        form.querySelector('input').focus();
+      });
+
+      // accessibility: smooth scroll for anchored links
+      document.querySelectorAll('a[href^="#"]').forEach(a=>{
+        a.addEventListener('click', function(e){
+          const id = a.getAttribute('href');
+          if(id.length > 1){
+            e.preventDefault();
+            const el = document.querySelector(id);
+            if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+          }
+        });
+      });
+    })();
+  </script>
 
 </body>
 </html>
