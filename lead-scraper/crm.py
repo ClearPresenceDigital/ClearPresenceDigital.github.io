@@ -162,7 +162,7 @@ HTML_PAGE = """<!doctype html>
 <div class="toast" id="toast"></div>
 
 <script>
-const MSG_TEMPLATE = `Hi [NAME], this is Aharon from Clear Presence Digital. I took a quick look at your Google listing and noticed a few areas that may be limiting visibility and reviews — mostly easy fixes that can make a real difference. I offer a free quick audit showing specific improvements. If you'd like, I can send the report today — no obligation.`;
+const MSG_TEMPLATE = `Hi [NAME], this is Ron from ClearPresence Digital. I took a quick look at your Google listing and noticed a few areas that may be limiting visibility and reviews — mostly easy fixes that can make a real difference. I offer a free quick audit showing specific improvements. If you'd like, I can send the report today — no obligation.`;
 
 let leads = [];
 let sortCol = 'lead_score';
