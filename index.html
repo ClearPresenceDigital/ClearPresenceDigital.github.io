@@ -552,5 +552,10 @@
   <a href="#">Privacy</a> · <a href="#">Terms</a>
 </footer>
 
+<script>
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) document.querySelector('form').reset();
+});
+</script>
 </body>
 </html>
