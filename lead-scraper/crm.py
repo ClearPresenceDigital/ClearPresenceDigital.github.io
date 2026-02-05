@@ -17,6 +17,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "leads.db")
+PENDING = {"phone": "", "msg": ""}
 
 HTML_PAGE = """<!doctype html>
 <html lang="en">
@@ -90,7 +91,7 @@ HTML_PAGE = """<!doctype html>
 <body>
 
 <h1>ClearPresence CRM</h1>
-<p class="subtitle">Lead tracking — <span id="dbpath"></span></p>
+<p class="subtitle">Lead tracking — <span id="dbpath"></span> &nbsp;|&nbsp; Drag this to bookmarks bar: <a href="javascript:void(fetch('http://localhost:9000/api/pending').then(r=>r.json()).then(d=>{if(!d.phone){alert('No pending message. Click Text in CRM first.');return;}function setVal(el,v){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}function waitFor(sel,cb,n){n=n||0;var el=document.querySelector(sel);if(el)return cb(el);if(n<30)setTimeout(()=>waitFor(sel,cb,n+1),500);}var toInput=document.querySelector('input[placeholder*=name i],input[placeholder*=number i],input[aria-label*=name i]');if(toInput){setVal(toInput,d.phone);setTimeout(()=>{toInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',keyCode:13,bubbles:true}));setTimeout(()=>{waitFor('textarea.message-input,textarea.cdk-textarea-autosize',el=>{setVal(el,d.msg);el.focus();});},1500);},800);}else{waitFor('textarea.message-input,textarea.cdk-textarea-autosize',el=>{setVal(el,d.msg);el.focus();alert('Phone field not found. Paste phone manually: '+d.phone);});}}).catch(()=>alert('CRM server not running on localhost:9000')))" style="display:inline-block;padding:3px 10px;background:var(--accent);color:#fff;border-radius:4px;font-size:12px;font-weight:600;cursor:grab">GV Fill</a></p>
 
 <div class="stats" id="stats"></div>
 
@@ -289,10 +290,16 @@ function sendText(encodedLink) {
   const name = l.name.split(/[^a-zA-Z'\\- ]/)[0].trim();
   const msg = MSG_TEMPLATE.replace('[NAME]', name);
   const phone = l.phone;
-  // Step 1: copy phone number so user can Ctrl+V in GV "To" field
-  navigator.clipboard.writeText(phone).then(() => {
-    showToast('Phone copied: ' + phone + ' — Ctrl+V in To field', msg);
+  // Store pending phone+msg on server for bookmarklet to fetch
+  fetch('/api/pending', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ phone, msg })
+  }).then(() => {
+    showToast('Ready — switch to GV tab and run bookmarklet (or Ctrl+V phone: ' + phone + ')', msg);
   });
+  // Also copy phone to clipboard as fallback
+  navigator.clipboard.writeText(phone);
   // Open or focus GV draft
   if (gvWindow && !gvWindow.closed) {
     gvWindow.focus();
@@ -402,11 +409,20 @@ load();
 
 
 class CRMHandler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        """Handle CORS preflight for bookmarklet cross-origin requests."""
+        self.send_response(200)
+        self._cors_headers()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
 
         if parsed.path == "/api/leads":
             self._send_json(self._get_leads())
+        elif parsed.path == "/api/pending":
+            self._send_json(PENDING)
         elif parsed.path == "/" or parsed.path == "":
             self._send_html(HTML_PAGE)
         else:
@@ -421,6 +437,10 @@ class CRMHandler(BaseHTTPRequestHandler):
             self._send_json({"ok": True})
         elif self.path == "/api/delete":
             self._delete_leads(body.get("maps_links", []))
+            self._send_json({"ok": True})
+        elif self.path == "/api/pending":
+            PENDING["phone"] = body.get("phone", "")
+            PENDING["msg"] = body.get("msg", "")
             self._send_json({"ok": True})
         else:
             self.send_error(404)
@@ -452,9 +472,15 @@ class CRMHandler(BaseHTTPRequestHandler):
         conn.commit()
         conn.close()
 
+    def _cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
     def _send_json(self, obj):
         body = json.dumps(obj).encode()
         self.send_response(200)
+        self._cors_headers()
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
