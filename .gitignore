@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Data files (local only)
+lead-scraper/leads.db
+lead-scraper/output/
+
+# OS
+.DS_Store
+*.mp3

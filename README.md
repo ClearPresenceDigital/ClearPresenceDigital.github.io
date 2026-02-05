@@ -128,3 +128,31 @@ lead-scraper/
   output/         # JSON + Excel exports per run
   venv/           # Python virtual environment
 ```
+
+
+
+
+DB INTERACTION:
+
+  View all leads:                                                                     
+  sqlite3 lead-scraper/leads.db "SELECT name, phone, lead_score, score_reasons, contact_status FROM leads ORDER BY
+  lead_score DESC"
+
+  View high-priority only:
+  sqlite3 lead-scraper/leads.db "SELECT name, phone, lead_score FROM leads WHERE lead_score >= 5 ORDER BY lead_score
+  DESC"
+
+  Add tracking notes to a lead:
+  sqlite3 lead-scraper/leads.db "UPDATE leads SET contact_status='contacted', last_contacted='2026-02-05', notes='Left
+   voicemail, will follow up Friday' WHERE name LIKE '%Business Name%'"
+
+  Mark a lead as closed:
+  sqlite3 lead-scraper/leads.db "UPDATE leads SET contact_status='closed', notes='Signed up for Growth plan' WHERE
+  name LIKE '%Business Name%'"
+
+  See all your tracked leads:
+  sqlite3 lead-scraper/leads.db -column -header "SELECT name, contact_status, last_contacted, notes FROM leads WHERE
+  contact_status != 'new'"
+
+  The CRM fields (contact_status, last_contacted, notes) are preserved when you re-scrape — only the scraped data gets
+   updated, your tracking stays intact.
