@@ -78,6 +78,10 @@ HTML_PAGE = """<!doctype html>
   .modal-actions button{padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:14px}
   .modal-actions .save{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
   .empty{text-align:center;padding:40px;color:var(--muted)}
+  .btn-text{background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600}
+  .btn-text:hover{opacity:.85}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1724;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -151,7 +155,11 @@ HTML_PAGE = """<!doctype html>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
+const MSG_TEMPLATE = `Hi [NAME], this is Aharon from Clear Presence Digital. I took a quick look at your Google listing and noticed a few areas that may be limiting visibility and reviews — mostly easy fixes that can make a real difference. I offer a free quick audit showing specific improvements. If you'd like, I can send the report today — no obligation.`;
+
 let leads = [];
 let sortCol = 'lead_score';
 let sortAsc = false;
@@ -236,6 +244,7 @@ function render() {
       <td><div class="actions">
         <button onclick="openEdit('${link}')">Edit</button>
         <a href="${esc(l.maps_link)}" target="_blank"><button>Maps</button></a>
+        ${phone !== '—' ? `<button class="btn-text" onclick="sendText('${link}')">Text</button>` : ''}
       </div></td>
     </tr>`;
   }).join('');
@@ -267,6 +276,26 @@ async function saveEdit() {
   await fetch('/api/update', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
   closeModal();
   await load();
+}
+
+function sendText(encodedLink) {
+  const link = decodeURIComponent(encodedLink);
+  const l = leads.find(x => x.maps_link === link);
+  if (!l || !l.phone || l.phone === '—') return;
+  const name = l.name.split(/[^a-zA-Z'\\- ]/)[0].trim();
+  const msg = MSG_TEMPLATE.replace('[NAME]', name);
+  const phone = l.phone.replace(/[^+\\d]/g, '');
+  navigator.clipboard.writeText(msg).then(() => {
+    showToast('Message copied — paste in Google Voice');
+    window.open('https://voice.google.com/u/0/messages?phoneNo=' + encodeURIComponent(phone), '_blank');
+  });
+}
+
+function showToast(text) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 function onRowCheck() {
