@@ -78,8 +78,8 @@ HTML_PAGE = """<!doctype html>
   .modal-actions button{padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:14px}
   .modal-actions .save{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
   .empty{text-align:center;padding:40px;color:var(--muted)}
-  .btn-text{background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600}
-  .btn-text:hover{opacity:.85}
+  .actions button.btn-text{background:#16a34a;color:#fff;border:1px solid #16a34a;font-weight:600}
+  .actions button.btn-text:hover{opacity:.85}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1724;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none}
   .toast.show{opacity:1}
 </style>
