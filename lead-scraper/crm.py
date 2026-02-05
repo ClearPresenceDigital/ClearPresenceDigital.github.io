@@ -284,18 +284,19 @@ function sendText(encodedLink) {
   if (!l || !l.phone || l.phone === '—') return;
   const name = l.name.split(/[^a-zA-Z'\\- ]/)[0].trim();
   const msg = MSG_TEMPLATE.replace('[NAME]', name);
-  const phone = l.phone.replace(/[^+\\d]/g, '');
+  const phone = l.phone;
+  // Copy message to clipboard (the long part — phone is shown in toast)
   navigator.clipboard.writeText(msg).then(() => {
-    showToast('Message copied — paste in Google Voice');
-    window.open('https://voice.google.com/u/0/messages?phoneNo=' + encodeURIComponent(phone), '_blank');
+    showToast('Message copied — send to: ' + phone, 8000);
   });
+  window.open('https://voice.google.com/u/2/messages', '_blank');
 }
 
-function showToast(text) {
+function showToast(text, duration) {
   const t = document.getElementById('toast');
   t.textContent = text;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(() => t.classList.remove('show'), duration || 3000);
 }
 
 function onRowCheck() {
