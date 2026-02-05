@@ -80,8 +80,11 @@ HTML_PAGE = """<!doctype html>
   .empty{text-align:center;padding:40px;color:var(--muted)}
   .actions button.btn-text{background:#16a34a;color:#fff;border:1px solid #16a34a;font-weight:600}
   .actions button.btn-text:hover{opacity:.85}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1724;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none}
-  .toast.show{opacity:1}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1724;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;display:flex;align-items:center;gap:12px;max-width:90vw}
+  .toast.show{opacity:1;pointer-events:auto}
+  .toast .copy-msg-btn{background:#16a34a;color:#fff;border:none;padding:6px 14px;border-radius:5px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap}
+  .toast .copy-msg-btn:hover{opacity:.85}
+  .toast .dismiss-btn{background:none;border:none;color:#999;cursor:pointer;font-size:16px;padding:0 4px}
 </style>
 </head>
 <body>
@@ -286,11 +289,11 @@ function sendText(encodedLink) {
   const name = l.name.split(/[^a-zA-Z'\\- ]/)[0].trim();
   const msg = MSG_TEMPLATE.replace('[NAME]', name);
   const phone = l.phone;
-  // Copy message to clipboard (the long part — phone is shown in toast)
-  navigator.clipboard.writeText(msg).then(() => {
-    showToast('Message copied — send to: ' + phone, 8000);
+  // Step 1: copy phone number so user can Ctrl+V in GV "To" field
+  navigator.clipboard.writeText(phone).then(() => {
+    showToast('Phone copied: ' + phone + ' — Ctrl+V in To field', msg);
   });
-  // Reuse existing GV tab if open, otherwise open one
+  // Open or focus GV draft
   if (gvWindow && !gvWindow.closed) {
     gvWindow.focus();
   } else {
@@ -298,11 +301,32 @@ function sendText(encodedLink) {
   }
 }
 
-function showToast(text, duration) {
+function showToast(text, pendingMsg) {
   const t = document.getElementById('toast');
-  t.textContent = text;
+  if (pendingMsg) {
+    t.innerHTML = '<span>' + esc(text) + '</span>'
+      + '<button class="copy-msg-btn" onclick="copyMsg()">Copy Message</button>'
+      + '<button class="dismiss-btn" onclick="hideToast()">&times;</button>';
+    window._pendingMsg = pendingMsg;
+  } else {
+    t.innerHTML = '<span>' + esc(text) + '</span>';
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration || 3000);
+}
+
+function copyMsg() {
+  if (!window._pendingMsg) return;
+  navigator.clipboard.writeText(window._pendingMsg).then(() => {
+    const t = document.getElementById('toast');
+    t.innerHTML = '<span>Message copied — Ctrl+V in message field</span>';
+    setTimeout(() => t.classList.remove('show'), 4000);
+    if (gvWindow && !gvWindow.closed) gvWindow.focus();
+  });
+}
+
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
 }
 
 function onRowCheck() {
