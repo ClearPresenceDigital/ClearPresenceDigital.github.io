@@ -294,7 +294,7 @@ function sendText(encodedLink) {
   if (gvWindow && !gvWindow.closed) {
     gvWindow.focus();
   } else {
-    gvWindow = window.open('https://voice.google.com/u/2/messages', 'googlevoice');
+    gvWindow = window.open('https://voice.google.com/u/2/messages?itemId=draft', 'googlevoice');
   }
 }
 
