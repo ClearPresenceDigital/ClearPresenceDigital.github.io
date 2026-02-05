@@ -58,6 +58,14 @@ HTML_PAGE = """<!doctype html>
   .actions{display:flex;gap:4px}
   .actions button{padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--card);cursor:pointer;font-size:11px}
   .actions button:hover{background:var(--bg)}
+  .del-bar{display:none;align-items:center;gap:12px;margin-bottom:14px;padding:10px 16px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px}
+  .del-bar.visible{display:flex}
+  .del-bar .del-btn{background:var(--red);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px}
+  .del-bar .del-btn:hover{opacity:.85}
+  .del-bar .del-count{font-size:13px;font-weight:600;color:var(--red)}
+  .del-bar .del-cancel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;text-decoration:underline}
+  .cb{width:16px;height:16px;cursor:pointer;accent-color:var(--red)}
+  th .cb{margin:0}
   /* Modal */
   .overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center}
   .overlay.open{display:flex}
@@ -96,9 +104,16 @@ HTML_PAGE = """<!doctype html>
   <input type="text" id="searchBox" placeholder="Search name, phone, category...">
 </div>
 
+<div class="del-bar" id="delBar">
+  <span class="del-count"><span id="delCount">0</span> selected</span>
+  <button class="del-btn" onclick="deleteSelected()">Delete selected</button>
+  <button class="del-cancel" onclick="clearSelection()">Cancel</button>
+</div>
+
 <table>
   <thead>
     <tr>
+      <th><input type="checkbox" class="cb" id="selectAll" onchange="toggleAll(this)"></th>
       <th data-col="lead_score">Score</th>
       <th data-col="contact_status">Status</th>
       <th data-col="name">Business</th>
@@ -140,6 +155,7 @@ HTML_PAGE = """<!doctype html>
 let leads = [];
 let sortCol = 'lead_score';
 let sortAsc = false;
+let selected = new Set();
 
 async function load() {
   const res = await fetch('/api/leads');
@@ -188,7 +204,7 @@ function render() {
 
   const tbody = document.getElementById('tbody');
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" class="empty">No leads match your filters</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="empty">No leads match your filters</td></tr>';
     return;
   }
 
@@ -205,7 +221,9 @@ function render() {
     const reasons = l.score_reasons || '';
     const lastC = l.last_contacted || '—';
     const link = encodeURIComponent(l.maps_link);
+    const checked = selected.has(l.maps_link) ? 'checked' : '';
     return `<tr>
+      <td><input type="checkbox" class="cb row-cb" data-link="${link}" ${checked} onchange="onRowCheck()"></td>
       <td><span class="score ${scClass}">${sc}</span></td>
       <td><span class="badge ${bClass}">${l.contact_status || 'new'}</span></td>
       <td><strong>${esc(l.name)}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(l.category || '')}</span></td>
@@ -251,6 +269,54 @@ async function saveEdit() {
   await load();
 }
 
+function onRowCheck() {
+  document.querySelectorAll('.row-cb').forEach(cb => {
+    const link = decodeURIComponent(cb.dataset.link);
+    if (cb.checked) selected.add(link);
+    else selected.delete(link);
+  });
+  updateDelBar();
+}
+
+function toggleAll(master) {
+  document.querySelectorAll('.row-cb').forEach(cb => {
+    cb.checked = master.checked;
+    const link = decodeURIComponent(cb.dataset.link);
+    if (master.checked) selected.add(link);
+    else selected.delete(link);
+  });
+  updateDelBar();
+}
+
+function updateDelBar() {
+  const bar = document.getElementById('delBar');
+  document.getElementById('delCount').textContent = selected.size;
+  if (selected.size > 0) bar.classList.add('visible');
+  else bar.classList.remove('visible');
+}
+
+function clearSelection() {
+  selected.clear();
+  document.querySelectorAll('.row-cb').forEach(cb => cb.checked = false);
+  document.getElementById('selectAll').checked = false;
+  updateDelBar();
+}
+
+async function deleteSelected() {
+  if (selected.size === 0) return;
+  if (!confirm(`Delete ${selected.size} lead(s)? This cannot be undone.`)) return;
+  const links = Array.from(selected);
+  await fetch('/api/delete', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ maps_links: links })
+  });
+  selected.clear();
+  document.getElementById('selectAll').checked = false;
+  updateDelBar();
+  await load();
+}
+
 // Column sort
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
@@ -287,10 +353,14 @@ class CRMHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self):
+        length = int(self.headers.get("Content-Length", 0))
+        body = json.loads(self.rfile.read(length))
+
         if self.path == "/api/update":
-            length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(length))
             self._update_lead(body)
+            self._send_json({"ok": True})
+        elif self.path == "/api/delete":
+            self._delete_leads(body.get("maps_links", []))
             self._send_json({"ok": True})
         else:
             self.send_error(404)
@@ -310,6 +380,15 @@ class CRMHandler(BaseHTTPRequestHandler):
             (data["contact_status"], data.get("last_contacted") or None,
              data.get("notes") or None, now, data["maps_link"])
         )
+        conn.commit()
+        conn.close()
+
+    def _delete_leads(self, maps_links):
+        if not maps_links:
+            return
+        conn = sqlite3.connect(DB_PATH)
+        placeholders = ",".join("?" for _ in maps_links)
+        conn.execute(f"DELETE FROM leads WHERE maps_link IN ({placeholders})", maps_links)
         conn.commit()
         conn.close()
 

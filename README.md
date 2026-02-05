@@ -156,3 +156,28 @@ DB INTERACTION:
 
   The CRM fields (contact_status, last_contacted, notes) are preserved when you re-scrape — only the scraped data gets
    updated, your tracking stays intact.
+
+   
+
+
+Scraper test results: 5 plumbers scraped, all 5 scored and saved to DB. Scores ranged 1-4 (these are
+  well-established businesses — East Brunswick plumbers have good online presence). Use --min-score 3 to catch more of
+   them.                                                                                                              
+                                                                                                                      
+  DB file location: lead-scraper/leads.db — right next to scraper.py. It's auto-created on first run.                 
+
+
+
+
+WEB UI FOR BD/CRM
+  CRM Web UI (crm.py) — zero dependencies, pure Python stdlib:
+  cd lead-scraper
+  python3 crm.py              # opens on port 8080
+  python3 crm.py --port 9000  # custom port
+  Then open http://localhost:8080 in your browser. Features:
+  - Sortable table (click any column header)
+  - Filter by status (new/contacted/replied/closed) and score threshold
+  - Search across name, phone, category
+  - Click Edit on any lead to update status, last contacted date, and notes
+  - Click Maps to open the listing directly
+  - Stats bar showing total leads, high-priority count, and status breakdown

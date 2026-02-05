@@ -803,17 +803,17 @@ def main():
         # Sort by score descending (worst quality = best prospect first)
         listings.sort(key=lambda x: x["lead_score"], reverse=True)
 
-        # ── Save to database ──
-        init_db()
-        upsert_leads(listings, query)
-
-        # ── Filter for output ──
+        # ── Filter by score ──
         if show_all:
             output_listings = listings
         else:
             output_listings = [l for l in listings if l["lead_score"] >= min_score]
 
-        high_priority = len([l for l in listings if l["lead_score"] >= min_score])
+        high_priority = len(output_listings)
+
+        # ── Save only qualifying leads to database ──
+        init_db()
+        upsert_leads(output_listings, query)
 
         # ── Save filtered output to JSON / Excel ──
         output_dir = os.path.join(SCRIPT_DIR, "output")
