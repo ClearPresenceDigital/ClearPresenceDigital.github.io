@@ -289,7 +289,7 @@ function sendText(encodedLink) {
   navigator.clipboard.writeText(msg).then(() => {
     showToast('Message copied — send to: ' + phone, 8000);
   });
-  window.open('https://voice.google.com/u/2/messages', '_blank');
+  window.open('https://voice.google.com/u/2/messages', 'googlevoice');
 }
 
 function showToast(text, duration) {
