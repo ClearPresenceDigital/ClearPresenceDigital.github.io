@@ -164,6 +164,7 @@ let leads = [];
 let sortCol = 'lead_score';
 let sortAsc = false;
 let selected = new Set();
+let gvWindow = null;
 
 async function load() {
   const res = await fetch('/api/leads');
@@ -289,7 +290,12 @@ function sendText(encodedLink) {
   navigator.clipboard.writeText(msg).then(() => {
     showToast('Message copied — send to: ' + phone, 8000);
   });
-  window.open('https://voice.google.com/u/2/messages', 'googlevoice');
+  // Reuse existing GV tab if open, otherwise open one
+  if (gvWindow && !gvWindow.closed) {
+    gvWindow.focus();
+  } else {
+    gvWindow = window.open('https://voice.google.com/u/2/messages', 'googlevoice');
+  }
 }
 
 function showToast(text, duration) {
