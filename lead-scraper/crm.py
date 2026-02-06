@@ -53,6 +53,7 @@ HTML_PAGE = """<!doctype html>
   .badge-contacted{background:#fef3c7;color:#92400e}
   .badge-replied{background:#d1fae5;color:#065f46}
   .badge-closed{background:#e5e7eb;color:#374151}
+  .badge-do_not_contact{background:#fee2e2;color:#991b1b}
   .reasons{font-size:11px;color:var(--muted);max-width:200px}
   .phone-link{color:var(--accent);text-decoration:none;white-space:nowrap}
   .web-link{color:var(--accent);font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
@@ -81,17 +82,47 @@ HTML_PAGE = """<!doctype html>
   .empty{text-align:center;padding:40px;color:var(--muted)}
   .actions button.btn-text{background:#16a34a;color:#fff;border:1px solid #16a34a;font-weight:600}
   .actions button.btn-text:hover{opacity:.85}
+  .actions button.btn-text2{background:#0b66ff;color:#fff;border:1px solid #0b66ff;font-weight:600}
+  .actions button.btn-text2:hover{opacity:.85}
+  .actions .btn-group{display:flex;gap:2px}
+  .actions .btn-group button{border-radius:0;font-size:10px;padding:4px 6px}
+  .actions .btn-group button:first-child{border-radius:4px 0 0 4px}
+  .actions .btn-group button:last-child{border-radius:0 4px 4px 0}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1724;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;display:flex;align-items:center;gap:12px;max-width:90vw}
   .toast.show{opacity:1;pointer-events:auto}
   .toast .copy-msg-btn{background:#16a34a;color:#fff;border:none;padding:6px 14px;border-radius:5px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap}
   .toast .copy-msg-btn:hover{opacity:.85}
   .toast .dismiss-btn{background:none;border:none;color:#999;cursor:pointer;font-size:16px;padding:0 4px}
+  /* Salesman selector */
+  .salesman-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+  .salesman-bar label{font-size:13px;font-weight:600;color:var(--muted)}
+  .salesman-bar select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-weight:600}
+  .salesman-bar .salesman-indicator{margin-left:auto;font-size:12px;color:var(--muted)}
+  /* Call buttons */
+  .actions button.btn-call{background:#7c3aed;color:#fff;border:1px solid #7c3aed;font-weight:600}
+  .actions button.btn-call:hover{opacity:.85}
+  /* Activity log modal */
+  .log-table{width:100%;font-size:12px;margin-top:12px;max-height:300px;overflow-y:auto;display:block}
+  .log-table th,.log-table td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+  .log-table th{background:var(--bg);position:sticky;top:0}
 </style>
 </head>
 <body>
 
 <h1>ClearPresence CRM</h1>
 <p class="subtitle">Lead tracking — <span id="dbpath"></span> &nbsp;|&nbsp; Drag this to bookmarks bar: <a href="javascript:void(fetch('http://localhost:9000/api/pending').then(r=>r.json()).then(d=>{if(!d.phone){alert('No pending message. Click Text in CRM first.');return;}function setVal(el,v){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}function waitFor(sel,cb,n){n=n||0;var el=document.querySelector(sel);if(el)return cb(el);if(n<30)setTimeout(()=>waitFor(sel,cb,n+1),500);}var toInput=document.querySelector('input[placeholder*=name i],input[placeholder*=number i],input[aria-label*=name i]');if(toInput){setVal(toInput,d.phone);setTimeout(()=>{toInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',keyCode:13,bubbles:true}));setTimeout(()=>{waitFor('textarea.message-input,textarea.cdk-textarea-autosize',el=>{setVal(el,d.msg);el.focus();});},1500);},800);}else{waitFor('textarea.message-input,textarea.cdk-textarea-autosize',el=>{setVal(el,d.msg);el.focus();alert('Phone field not found. Paste phone manually: '+d.phone);});}}).catch(()=>alert('CRM server not running on localhost:9000')))" style="display:inline-block;padding:3px 10px;background:var(--accent);color:#fff;border-radius:4px;font-size:12px;font-weight:600;cursor:grab">GV Fill</a></p>
+
+<div class="salesman-bar">
+  <label>Salesman:</label>
+  <select id="salesmanSelect" onchange="saveSalesman()">
+    <option value="">-- Select --</option>
+    <option value="Ron">Ron</option>
+    <option value="Salesman2">Salesman 2</option>
+    <option value="Salesman3">Salesman 3</option>
+  </select>
+  <span class="salesman-indicator">All actions logged</span>
+  <button onclick="showActivityLog()" style="margin-left:8px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:var(--card);cursor:pointer;font-size:12px">View Log</button>
+</div>
 
 <div class="stats" id="stats"></div>
 
@@ -102,6 +133,7 @@ HTML_PAGE = """<!doctype html>
     <option value="contacted">Contacted</option>
     <option value="replied">Replied</option>
     <option value="closed">Closed</option>
+    <option value="do_not_contact">Do Not Contact</option>
   </select>
   <select id="filterScore">
     <option value="0">All scores</option>
@@ -131,6 +163,7 @@ HTML_PAGE = """<!doctype html>
       <th data-col="review_count">Reviews</th>
       <th>Reasons</th>
       <th data-col="last_contacted">Last Contact</th>
+      <th data-col="scraped_at">Scraped</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -147,6 +180,7 @@ HTML_PAGE = """<!doctype html>
       <option value="contacted">Contacted</option>
       <option value="replied">Replied</option>
       <option value="closed">Closed</option>
+      <option value="do_not_contact">Do Not Contact</option>
     </select>
     <label>Last Contacted</label>
     <input type="date" id="editDate">
@@ -159,10 +193,31 @@ HTML_PAGE = """<!doctype html>
   </div>
 </div>
 
+<div class="overlay" id="logOverlay">
+  <div class="modal" style="width:600px">
+    <h2>Activity Log</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Irrevocable record of all salesman actions</p>
+    <table class="log-table">
+      <thead><tr><th>Time</th><th>Salesman</th><th>Action</th><th>Lead</th></tr></thead>
+      <tbody id="logBody"></tbody>
+    </table>
+    <div class="modal-actions">
+      <button onclick="closeLogModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const MSG_TEMPLATE = `Hi [NAME], this is Ron from ClearPresence Digital. I took a quick look at your Google listing and noticed a few areas that may be limiting visibility and reviews — mostly easy fixes that can make a real difference. I offer a free quick audit showing specific improvements. If you'd like, I can send the report today — no obligation.`;
+// Message templates for two-step outreach flow
+const MSG_TEMPLATES = {
+  // Text 1: Initial outreach (no link) - for NEW leads
+  initial: `Hi [NAME], this is Ron from ClearPresence Digital. I noticed a few areas on your Google listing that may be limiting visibility and reviews — mostly easy fixes. I offer a free quick audit showing specific improvements. Want me to send it over? Reply STOP to opt out.`,
+
+  // Text 2: Follow-up with audit (with link) - for REPLIED leads
+  followup: `Hi [NAME], here's the quick audit I mentioned for your Google Business Profile. I found [X] areas for improvement. You can see the details here: clearpresencedigital.com — Happy to walk through it if you have questions. Reply STOP to opt out.`
+};
 
 let leads = [];
 let sortCol = 'lead_score';
@@ -170,9 +225,73 @@ let sortAsc = false;
 let selected = new Set();
 let gvWindow = null;
 
+// === Salesman & Activity Logging ===
+function getSalesman() {
+  return localStorage.getItem('crm_salesman') || '';
+}
+
+function saveSalesman() {
+  const val = document.getElementById('salesmanSelect').value;
+  localStorage.setItem('crm_salesman', val);
+}
+
+function initSalesman() {
+  const saved = getSalesman();
+  if (saved) {
+    document.getElementById('salesmanSelect').value = saved;
+  }
+}
+
+function logActivity(action, leadName, details = '') {
+  const salesman = getSalesman();
+  if (!salesman) {
+    alert('Please select a salesman first!');
+    return false;
+  }
+  const entry = {
+    timestamp: new Date().toISOString(),
+    salesman: salesman,
+    action: action,
+    lead: leadName,
+    details: details
+  };
+  // Store in localStorage (append to array)
+  const logs = JSON.parse(localStorage.getItem('crm_activity_log') || '[]');
+  logs.unshift(entry); // newest first
+  // Keep last 1000 entries
+  if (logs.length > 1000) logs.length = 1000;
+  localStorage.setItem('crm_activity_log', JSON.stringify(logs));
+  // Also send to server for permanent storage
+  fetch('/api/log', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(entry)
+  }).catch(() => {}); // ignore errors, localStorage is backup
+  return true;
+}
+
+function showActivityLog() {
+  const logs = JSON.parse(localStorage.getItem('crm_activity_log') || '[]');
+  const tbody = document.getElementById('logBody');
+  if (logs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">No activity yet</td></tr>';
+  } else {
+    tbody.innerHTML = logs.slice(0, 100).map(e => {
+      const time = new Date(e.timestamp).toLocaleString();
+      return `<tr><td>${time}</td><td>${esc(e.salesman)}</td><td>${esc(e.action)}</td><td>${esc(e.lead)}</td></tr>`;
+    }).join('');
+  }
+  document.getElementById('logOverlay').classList.add('open');
+}
+
+function closeLogModal() {
+  document.getElementById('logOverlay').classList.remove('open');
+}
+
 async function load() {
   const res = await fetch('/api/leads');
   leads = await res.json();
+  initSalesman();
   render();
 }
 
@@ -204,6 +323,7 @@ function render() {
   const contacted = leads.filter(l => l.contact_status === 'contacted').length;
   const replied = leads.filter(l => l.contact_status === 'replied').length;
   const closed = leads.filter(l => l.contact_status === 'closed').length;
+  const dnc = leads.filter(l => l.contact_status === 'do_not_contact').length;
   const highP = leads.filter(l => l.lead_score >= 5).length;
   document.getElementById('stats').innerHTML = `
     <div class="stat"><div class="n">${total}</div><div class="label">Total leads</div></div>
@@ -212,12 +332,13 @@ function render() {
     <div class="stat"><div class="n">${contacted}</div><div class="label">Contacted</div></div>
     <div class="stat"><div class="n">${replied}</div><div class="label">Replied</div></div>
     <div class="stat"><div class="n">${closed}</div><div class="label">Closed</div></div>
+    ${dnc > 0 ? `<div class="stat"><div class="n" style="color:var(--red)">${dnc}</div><div class="label">Do Not Contact</div></div>` : ''}
   `;
   document.getElementById('dbpath').textContent = 'leads.db';
 
   const tbody = document.getElementById('tbody');
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" class="empty">No leads match your filters</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="empty">No leads match your filters</td></tr>';
     return;
   }
 
@@ -226,7 +347,8 @@ function render() {
     const scClass = sc >= 7 ? 'score-high' : sc >= 4 ? 'score-med' : 'score-low';
     const bClass = 'badge-' + (l.contact_status || 'new');
     const phone = l.phone || '—';
-    const phoneHref = phone !== '—' ? `tel:${phone.replace(/[^+\\d]/g, '')}` : '#';
+    const phoneClean = phone.replace(/[^+\\d]/g, '');
+    const phoneHref = phone !== '—' ? `https://voice.google.com/u/2/calls?a=nc&n=${encodeURIComponent(phoneClean)}` : '#';
     const web = l.website || '';
     const webShort = web ? web.replace(/^https?:\\/\\//, '').replace(/\\/$/, '') : '—';
     const rating = l.rating != null ? l.rating.toFixed(1) : '—';
@@ -246,16 +368,52 @@ function render() {
       <td>${reviews}</td>
       <td><span class="reasons">${esc(reasons)}</span></td>
       <td>${lastC}</td>
+      <td style="font-size:11px;color:var(--muted)">${l.scraped_at ? l.scraped_at.split('T')[0] : '—'}</td>
       <td><div class="actions">
         <button onclick="openEdit('${link}')">Edit</button>
         <a href="${esc(l.maps_link)}" target="_blank"><button>Maps</button></a>
-        ${phone !== '—' ? `<button class="btn-text" onclick="sendText('${link}')">Text</button>` : ''}
+        ${getTextButtons(l, link, phone)}
       </div></td>
     </tr>`;
   }).join('');
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Returns appropriate text button(s) based on lead status
+function getTextButtons(lead, link, phone) {
+  if (phone === '—') return '';
+  const status = lead.contact_status || 'new';
+  const phoneClean = phone.replace(/[^+\\d]/g, '');
+
+  // Call button (always shown if phone exists, except for do_not_contact)
+  const callBtn = status !== 'do_not_contact'
+    ? `<button class="btn-call" onclick="makeCall('${link}', '${phoneClean}')" title="Call via tel:">Call</button>`
+    : '';
+
+  // No text buttons for closed or do_not_contact
+  if (status === 'closed' || status === 'do_not_contact') return callBtn;
+
+  // For NEW leads: show "Text 1" (initial outreach)
+  if (status === 'new') {
+    return `${callBtn}<button class="btn-text" onclick="sendText('${link}', 'initial')">Text 1</button>`;
+  }
+
+  // For CONTACTED leads: show both options
+  if (status === 'contacted') {
+    return `${callBtn}<div class="btn-group">
+      <button class="btn-text" onclick="sendText('${link}', 'initial')" title="Resend initial">1</button>
+      <button class="btn-text2" onclick="sendText('${link}', 'followup')" title="Send audit follow-up">2</button>
+    </div>`;
+  }
+
+  // For REPLIED leads: show "Text 2" (follow-up with audit)
+  if (status === 'replied') {
+    return `${callBtn}<button class="btn-text2" onclick="sendText('${link}', 'followup')">Text 2</button>`;
+  }
+
+  return callBtn;
+}
 
 function openEdit(encodedLink) {
   const link = decodeURIComponent(encodedLink);
@@ -272,31 +430,75 @@ function openEdit(encodedLink) {
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
 
 async function saveEdit() {
+  const link = document.getElementById('editLink').value;
+  const l = leads.find(x => x.maps_link === link);
   const body = {
-    maps_link: document.getElementById('editLink').value,
+    maps_link: link,
     contact_status: document.getElementById('editStatus').value,
     last_contacted: document.getElementById('editDate').value,
     notes: document.getElementById('editNotes').value,
   };
+  // Log activity
+  if (!logActivity('edited', l ? l.name : 'Unknown', `Status: ${body.contact_status}`)) return;
   await fetch('/api/update', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
   closeModal();
   await load();
 }
 
-function sendText(encodedLink) {
+// Make a call via tel: link (works on mobile)
+function makeCall(encodedLink, phoneClean) {
+  const link = decodeURIComponent(encodedLink);
+  const l = leads.find(x => x.maps_link === link);
+  if (!l) return;
+  // Log activity
+  if (!logActivity('called', l.name, `Phone: ${l.phone}`)) return;
+  // Open tel: link
+  window.open('tel:' + phoneClean, '_self');
+}
+
+function sendText(encodedLink, templateType = 'initial') {
   const link = decodeURIComponent(encodedLink);
   const l = leads.find(x => x.maps_link === link);
   if (!l || !l.phone || l.phone === '—') return;
+
+  // Log activity first (will alert if no salesman selected)
+  const actionName = templateType === 'initial' ? 'texted (initial)' : 'texted (follow-up)';
+  if (!logActivity(actionName, l.name, `Phone: ${l.phone}`)) return;
+
   const name = l.name.split(/[^a-zA-Z'\\- ]/)[0].trim();
-  const msg = MSG_TEMPLATE.replace('[NAME]', name);
+  const template = MSG_TEMPLATES[templateType] || MSG_TEMPLATES.initial;
+  const msg = template.replace('[NAME]', name);
   const phone = l.phone;
+
+  // Determine new status based on template type
+  const newStatus = templateType === 'initial' ? 'contacted' : l.contact_status;
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+  // Auto-update status and date
+  fetch('/api/update', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      maps_link: link,
+      contact_status: newStatus,
+      last_contacted: today,
+      notes: l.notes || ''
+    })
+  }).then(() => {
+    // Update local state so UI reflects change immediately
+    l.contact_status = newStatus;
+    l.last_contacted = today;
+    render();
+  });
+
   // Store pending phone+msg on server for bookmarklet to fetch
   fetch('/api/pending', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ phone, msg })
   }).then(() => {
-    showToast('Ready — switch to GV tab and run bookmarklet (or Ctrl+V phone: ' + phone + ')', msg);
+    const label = templateType === 'initial' ? 'Text 1 ready' : 'Text 2 (audit) ready';
+    showToast(label + ' — switch to GV tab and run bookmarklet (or Ctrl+V phone: ' + phone + ')', msg);
   });
   // Also copy phone to clipboard as fallback
   navigator.clipboard.writeText(phone);
@@ -399,8 +601,8 @@ document.getElementById('filterStatus').addEventListener('change', render);
 document.getElementById('filterScore').addEventListener('change', render);
 document.getElementById('searchBox').addEventListener('input', render);
 
-// Escape key closes modal
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+// Escape key closes modals
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeLogModal(); } });
 
 load();
 </script>
@@ -442,6 +644,9 @@ class CRMHandler(BaseHTTPRequestHandler):
             PENDING["phone"] = body.get("phone", "")
             PENDING["msg"] = body.get("msg", "")
             self._send_json({"ok": True})
+        elif self.path == "/api/log":
+            self._log_activity(body)
+            self._send_json({"ok": True})
         else:
             self.send_error(404)
 
@@ -471,6 +676,19 @@ class CRMHandler(BaseHTTPRequestHandler):
         conn.execute(f"DELETE FROM leads WHERE maps_link IN ({placeholders})", maps_links)
         conn.commit()
         conn.close()
+
+    def _log_activity(self, data):
+        """Append activity to irrevocable log file."""
+        log_path = os.path.join(os.path.dirname(DB_PATH), "activity_log.jsonl")
+        entry = {
+            "timestamp": data.get("timestamp", datetime.now(timezone.utc).isoformat()),
+            "salesman": data.get("salesman", "unknown"),
+            "action": data.get("action", ""),
+            "lead": data.get("lead", ""),
+            "details": data.get("details", "")
+        }
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
 
     def _cors_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
